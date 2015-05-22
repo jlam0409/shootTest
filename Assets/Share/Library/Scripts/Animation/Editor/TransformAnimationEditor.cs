@@ -1,0 +1,121 @@
+using UnityEngine;
+using UnityEditor;
+using System.Collections;
+
+[CustomEditor(typeof(TransformAnimation))]
+public class TransformAnimationEditor : Editor {
+	
+	//CalculationBase calculationBase = (TransformaAniamtion)target.calculationBase;
+	bool useLocator = false;
+	
+	public void OnSceneGUI (){
+		TransformAnimation script = (TransformAnimation) target;
+		
+		if (useLocator){
+			Handles.Label (script.startPoint, "Start Point");
+    		script.startPoint = Handles.PositionHandle (script.startPoint, Quaternion.identity);
+			
+			if (script.calculationBase != CalculationBase.Velocity){
+				Handles.Label (script.endPoint, "End Point");
+				script.endPoint = Handles.PositionHandle (script.endPoint, Quaternion.identity);
+			}
+		}
+		
+    	if (GUI.changed)
+        	EditorUtility.SetDirty(target);
+    }
+	
+    public override void OnInspectorGUI () {
+		TransformAnimation script = (TransformAnimation) target;
+		EditorGUIUtility.LookLikeInspector();
+		/*
+		EditorGUILayout.LabelField ("Keyword","for callback argument:");
+		EditorGUILayout.LabelField ("GameObject/gameObject","gameObject");
+		EditorGUILayout.LabelField ("this","this");
+		EditorGUILayout.LabelField ("true","true");
+		EditorGUILayout.LabelField ("false","false");
+		*/
+		script.callback.callbackListener = (GameObject)EditorGUILayout.ObjectField (new GUIContent("Callback Listener"), script.callback.callbackListener, typeof(GameObject), true);
+		if (script.callback.callbackListener != null){
+			script.callback.callbackFunction = EditorGUILayout.TextField ("Callback Function", script.callback.callbackFunction);
+			if (script.callback.callbackFunction != ""){
+				script.callback.callbackArgument = EditorGUILayout.TextField ("Callback Argument", script.callback.callbackArgument);
+			}
+		}
+		
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		
+		script.animObject = (GameObject)EditorGUILayout.ObjectField (new GUIContent("Anim Object"), script.animObject, typeof(GameObject), true); 
+		script.transformType = (TransformType)EditorGUILayout.EnumPopup("Transform Type", script.transformType);
+
+		script.calculationBase = (CalculationBase)EditorGUILayout.EnumPopup("Calculation", script.calculationBase);
+		
+		
+		switch (script.calculationBase){
+			case CalculationBase.Point:
+				script.animationPath = (AnimationPath)EditorGUILayout.EnumPopup("Animation Path", script.animationPath);
+				useLocator = EditorGUILayout.Toggle("Use Locators", useLocator);
+			
+				EditorGUIUtility.LookLikeControls();
+				script.startPoint = EditorGUILayout.Vector3Field ("Start Point", script.startPoint);
+				script.endPoint = EditorGUILayout.Vector3Field ("End Point", script.endPoint);
+				if (script.animationPath == AnimationPath.Sine){
+					script.amplitude = EditorGUILayout.Vector3Field ("Amplitude", script.amplitude);
+					script.frequency = EditorGUILayout.Vector3Field ("Frequency", script.frequency);
+				}
+	
+				break;
+			case CalculationBase.Velocity:
+				useLocator = EditorGUILayout.Toggle("Use Locators", useLocator);
+				EditorGUIUtility.LookLikeControls();
+				script.startPoint = EditorGUILayout.Vector3Field ("Start Point", script.startPoint);
+				script.startVelocity = EditorGUILayout.Vector3Field ("Start Velocity", script.startVelocity);
+				script.endVelocity = EditorGUILayout.Vector3Field ("End Velocity", script.endVelocity);
+				script.acceleration = EditorGUILayout.Vector3Field ("Acceleration", script.acceleration);	
+				break;
+		}
+		
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		EditorGUIUtility.LookLikeInspector();
+		
+		// duration and speed switch
+		if (script.calculationBase == CalculationBase.Velocity){
+			EditorGUILayout.Toggle("Use Duration", true);
+			script.duration = EditorGUILayout.FloatField ("Duration", script.duration);
+		} else {
+			script.useDuration = EditorGUILayout.Toggle("Use Duration", script.useDuration);	
+			if (script.useDuration){
+				script.duration = EditorGUILayout.FloatField ("Duration", script.duration);
+			} else {
+				script.speed = EditorGUILayout.FloatField ("Speed", script.speed);	
+			}
+		}
+		
+		
+		
+		
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		
+		script.ease = (EaseType)EditorGUILayout.EnumPopup ("Ease", script.ease);
+		script.animationMode = (AnimationMode)EditorGUILayout.EnumPopup("Animation Mode", script.animationMode);
+		
+		script.numberOfCycle = EditorGUILayout.IntField ("Number of Cycle", script.numberOfCycle);
+		script.holdAfterCycle = EditorGUILayout.Toggle ("Hold after Cycle", script.holdAfterCycle);
+		if (script.holdAfterCycle){
+			script.holdDuration = EditorGUILayout.FloatField ("Hold Duration", script.holdDuration);
+		}
+		
+		EditorGUILayout.Space();
+		EditorGUILayout.Space();
+		
+		script.moveAtStart = EditorGUILayout.Toggle ("Move at Start", script.moveAtStart);
+		
+        if (GUI.changed){
+            EditorUtility.SetDirty (target);
+		}
+    }
+
+}

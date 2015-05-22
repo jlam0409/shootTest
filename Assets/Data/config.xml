@@ -1,0 +1,6 @@
+<gameConfig>
+	<timer>180</timer>
+	<debrisCount>20</debrisCount>
+	<debrisInterval>2</debrisInterval>
+	<debrisReward>2</debrisReward>
+</gameConfig>
